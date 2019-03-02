@@ -9,7 +9,10 @@ import gzip
 class LevelDbDump(object):
     def __init__(self):
         self.path0 = os.getcwd()
-        self.path = os.path.split(os.path.realpath(__file__))[0] + "/"
+        ## path of app files
+        # self.path = os.path.split(os.path.realpath(__file__))[0] + "/"
+        ## current working directory
+        self.path = os.getcwd() + "/"
         self.undecodelist = ""
 
         parser = argparse.ArgumentParser(description=os.path.basename(__file__) + " - dumps a leveldb from ./leveldb or from the path you set with '-d' - latest source: https://github.com/cleanworld123/leveldb_read_write_python3")
