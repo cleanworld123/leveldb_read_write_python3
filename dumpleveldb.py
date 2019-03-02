@@ -34,7 +34,7 @@ class LevelDbDump(object):
         try:
             self.db = plyvel.DB(self.dbpath)
         except:
-            print("wrong database path '" + self.dbpath + "'? put it to ./leveldb or set the path with '-d'. use 'dumpleveldb --help' for more help")
+            print("wrong database path '" + self.dbpath + "' or missing access rights? put it to ./leveldb or set the path with '-d'. use 'dumpleveldb --help' for more help")
             exit(1)
 
     def run(self):
