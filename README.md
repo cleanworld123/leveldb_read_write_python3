@@ -7,7 +7,7 @@ Use `leveldbdump.py -d ../../path/to/leveldb`
 ## dependencies
 `pip install leveldb`
 
-
+## how to
 ```
 $ ./leveldbdump.py --help
 usage: leveldbdump.py [-h] [-d LEVEL_DB_PATH]
