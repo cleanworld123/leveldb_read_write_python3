@@ -39,8 +39,14 @@ class LevelDbDump(object):
         except:
             print("wrong database path '" + self.dbpath + "' or missing access rights? put it to ./leveldb or set the path with '-d'. use 'dumpleveldb --help' for more help")
             exit(1)
+            
+    def run()
+        try:
+            self.main(self)
+        except (IOError, KeyboardInterrupt):
+            pass
 
-    def run(self):
+    def main(self):
         # get iterator
         self.it = self.db.iterator()
         # read key,value (type is bytes); decode by utf-8 ; write into file
