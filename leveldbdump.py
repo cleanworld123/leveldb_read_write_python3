@@ -9,38 +9,53 @@ import gzip
 class LevelDbDump(object):
     def __init__(self):
         self.path0 = os.getcwd()
-        self.path = os.path.split(os.path.realpath(__file__))[0] + "/"
+        ## path of app files
+        # self.path = os.path.split(os.path.realpath(__file__))[0] + "/"
+        ## current working directory
+        self.path = os.getcwd() + "/"
         self.undecodelist = ""
 
-        parser = argparse.ArgumentParser(description="leveldbdump - dumps a leveldb from ./leveldb or from the path you set with '-d' - https://github.com/cleanworld123/leveldb_read_write_python3")
-        parser.add_argument('-d', '--db_path', dest='db_path', help='Path to database directory')
+        parser = argparse.ArgumentParser(description=os.path.basename(__file__) +
+                                                     " dumps the content of a leveldb to stdout and into 3 different "
+                                                     "dat files (str4files, decoded and uncoded content) to the current"
+                                                     " working directory. Use `" + os.path.basename(__file__) + " -d ../../path/to/leveldb` "
+                                                     "or it will create a dump of './leveldb' - https://github.com/bithon/python-leveldbdump")
+
+        parser.add_argument('-d', '--db-path', dest='level_db_path', help='Path to database directory')
         self.args = parser.parse_args()
 
-        if self.args.db_path:
-            self.dbpath = self.args.db_path
+        if self.args.level_db_path:
+            self.dbpath = self.args.level_db_path
         else:
             self.dbpath = self.path + "leveldb"
 
-        self.str4bytesfile = self.path + 'str4bytesCookieContent.dat'
-        self.decodedfile = self.path + 'decodedCookieContent.dat'
-        self.undecodedfile = self.path + 'undecodedCookieContent.dat'
-
+        self.str4bytesfile = self.path + os.path.basename(__file__) + '_str4bytesCookieContent.dat'
+        self.decodedfile = self.path + os.path.basename(__file__) + '_decodedCookieContent.dat'
+        self.undecodedfile = self.path + os.path.basename(__file__) + '_undecodedCookieContent.dat'
 
         self.msg_begin = "===================== BEGIN ===================="
         self.msg_end = "====================== END ====================="
 
+        self.it = ""
+
         # get leveldb object
         try:
-            self.db = plyvel.DB(self.dbpath)
+            self.db = plyvel.DB(self.dbpath, create_if_missing=False)
         except:
-            print("wrong database path '" + self.dbpath + "'? put it to ./leveldb or set the path with '-d'. use 'dumpleveldb --help' for more help")
+            print("wrong database path '" + self.dbpath + "', missing access rights or the database is in use? put the database to ./leveldb or set the path with '-d'. use '" + os.path.basename(__file__) + " --help' for more help!")
             exit(1)
-
+            
     def run(self):
+        try:
+            self.main()
+        except (IOError, KeyboardInterrupt):
+            pass
+
+    def main(self):
         # get iterator
         self.it = self.db.iterator()
         # read key,value (type is bytes); decode by utf-8 ; write into file
-        self.undecodelist = self._writedecodedkv()
+        self._writedecodedkv()
         self.it.close()
 
         self.it = self.db.iterator()
@@ -50,7 +65,6 @@ class LevelDbDump(object):
 
         # write fail decoded key,value pair into file. (a lot of hex ,eg. x08xa1xe3...)
         self._writefaildecodedkv()
-
         self.db.close()
 
     # write force str(key,value)
@@ -84,7 +98,6 @@ class LevelDbDump(object):
             print(self.msg_end)
             f.write(self.msg_end + '\n')
 
-
     # write faildecoded key,value
     def _writefaildecodedkv(self):
         j = 1
@@ -111,7 +124,6 @@ class LevelDbDump(object):
             except Exception as e:
                 estr = str(j) + ', key:' + key.decode('utf-8') + ', write into file wrong.  ' + str(e)
                 print(estr)
-
 
     # write decoded key,value
     def _writedecodedkv(self):
@@ -149,15 +161,14 @@ class LevelDbDump(object):
             f.write(self.msg_end + '\n')
         return self.undecodelist
 
-
     # write decoded whatsapp key,value
-    def _writedecodedwhatsappkv(self, it):
+    def _writedecodedwhatsappkv(self):
         self.undecodelist = []  # fail decoded list
         with open(self.decodedfile, mode='w', encoding='utf-8') as f:
             print(self.msg_begin)
             f.write(self.msg_begin + '\n')
             i = 1
-            for key, value in it:
+            for key, value in self.it:
                 num = 'Record ' + str(i) + '\n'
                 f.write(num)
                 try:
@@ -187,7 +198,6 @@ class LevelDbDump(object):
             print(self.msg_end)
             f.write(self.msg_end + '\n')
         return self.undecodelist
-
 
 if __name__ == '__main__':
     leveldbdump = LevelDbDump()

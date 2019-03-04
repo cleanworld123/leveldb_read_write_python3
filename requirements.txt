@@ -1,2 +1,1 @@
 leveldb
-gzip
